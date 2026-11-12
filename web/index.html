@@ -30,7 +30,8 @@ main{max-width:980px;margin:auto;padding:28px 16px 56px}.top{display:flex;align-
 <div id="senderList" class="senderlist"></div>
 <div class="row"><select id="targetGroup" class="field"><option value="">Neue Gruppe erstellen …</option></select><input id="newGroupName" class="field" type="text" placeholder="Name der neuen Gruppe"><button id="makeGroup">Auswahl übernehmen</button></div>
 <p class="hint">Die ausgewählten Sender werden in der Export-Playlist der neuen Gruppe zugeordnet. Nicht ausgewählte Sender bleiben in ihrer bisherigen Gruppe.</p></section>
-<section class="card" id="exportCard" hidden><h2>4. Gefilterte Playlist exportieren</h2><div class="export"><button id="export">M3U-Datei herunterladen</button><span class="hint" id="exportInfo">Die Stream-Adressen und Sender-Metadaten bleiben unverändert.</span></div></section>
+<section class="card" id="previewCard" hidden><h2>4. Vorschau der fertigen Playlist</h2><p class="hint">Hier siehst du die ausgewählten Gruppen und Sender so, wie sie in die Exportdatei übernommen werden.</p><div class="toolbar"><button class="secondary" id="refreshPreview">Vorschau aktualisieren</button><span class="hint" id="previewSummary"></span></div><div id="previewList" class="senderlist"></div></section>
+<section class="card" id="exportCard" hidden><h2>5. Gefilterte Playlist exportieren</h2><div class="export"><button id="export">M3U-Datei herunterladen</button><span class="hint" id="exportInfo">Die Stream-Adressen und Sender-Metadaten bleiben unverändert.</span></div></section>
 <p class="foot">M3U Creator · Web-Version · Keine Playlist-Daten werden an einen Server übertragen.</p>
 </main>
 <script>
@@ -74,7 +75,8 @@ function render(){
  [...groups.keys()].sort((a,b)=>a.localeCompare(b,'de')).forEach(name=>{const o=document.createElement('option');o.value=name;o.textContent='Vorhandene Gruppe: '+name;target.append(o)});
  if(groups.has(oldTarget))target.value=oldTarget;
  $('newGroupName').disabled=!!target.value;$('newGroupName').placeholder=target.value?'Optionaler Name – wird nicht benötigt':'Name der neuen Gruppe';
- renderSenders();updateCount();$('export').disabled=entries.length===0;
+ $('previewCard').hidden=false;
+ renderSenders();updateCount();$('export').disabled=entries.length===0;renderPreview();
 }
 function channelTitle(item){
  const ext=item.lines.find(l=>l.startsWith('#EXTINF'))||'';
@@ -144,6 +146,23 @@ $('makeGroup').addEventListener('click',()=>{
  render();setStatus(chosen.length+' Sender wurden der Gruppe „'+name+'“ zugeordnet. Du kannst weitere Gruppen erstellen oder vorhandene Gruppen zusammenführen.');
 });
 
+function renderPreview(){
+ const selected=getSelected();
+ const chosen=entries.filter(e=>selected.has(e.group));
+ const host=$('previewList');host.innerHTML='';
+ const grouped=new Map();
+ chosen.forEach(item=>{if(!grouped.has(item.group))grouped.set(item.group,[]);grouped.get(item.group).push(item)});
+ $('previewSummary').textContent=chosen.length+' Sender in '+grouped.size+' Gruppen';
+ if(!chosen.length){const empty=document.createElement('div');empty.className='empty';empty.textContent='Keine Gruppen ausgewählt. Wähle oben mindestens eine Gruppe aus.';host.append(empty);return}
+ [...grouped].sort((a,b)=>a[0].localeCompare(b[0],'de')).forEach(([group,items])=>{
+  const section=document.createElement('div');section.className='card';section.style.margin='0';section.style.padding='12px';
+  const heading=document.createElement('strong');heading.textContent=group+' · '+items.length+' Sender';section.append(heading);
+  const list=document.createElement('div');list.style.marginTop='8px';list.style.display='grid';list.style.gap='5px';
+  items.forEach(item=>{const line=document.createElement('div');line.className='sender';line.textContent=channelTitle(item);list.append(line)});
+  section.append(list);host.append(section);
+ });
+}
+$('refreshPreview').addEventListener('click',renderPreview);
 $('export').addEventListener('click',()=>{
  const selected=getSelected();const chosen=entries.filter(e=>selected.has(e.group));if(!chosen.length)return;
  const out=[header,...chosen.flatMap(e=>e.lines)].join('\n')+'\n';const blob=new Blob([out],{type:'audio/x-mpegurl;charset=utf-8'});const a=document.createElement('a');const u=URL.createObjectURL(blob);a.href=u;a.download='playlist-gefiltert.m3u';document.body.append(a);a.click();a.remove();URL.revokeObjectURL(u);$('exportInfo').textContent=chosen.length+' Sender exportiert.';
