@@ -56,12 +56,13 @@ function parse(text){
 }
 function render(){
  const previouslySelected=new Set([...document.querySelectorAll('#groups input:checked')].map(x=>x.dataset.group));
+ const previouslyExisting=new Set([...document.querySelectorAll('#groups input')].map(x=>x.dataset.group));
  $('results').hidden=false;$('customCard').hidden=false;$('exportCard').hidden=false;
  $('totalChannels').textContent=entries.length;$('totalGroups').textContent=groups.size;
  $('search').value='';const host=$('groups');host.innerHTML='';
  for(const [name,count] of [...groups].sort((a,b)=>a[0].localeCompare(b[0],'de'))){
   const label=document.createElement('label');label.className='group';label.dataset.name=name.toLocaleLowerCase('de');
-  const cb=document.createElement('input');cb.type='checkbox';cb.checked=previouslySelected.size?previouslySelected.has(name):true;cb.dataset.group=name;cb.addEventListener('change',updateCount);
+  const cb=document.createElement('input');cb.type='checkbox';cb.checked=previouslyExisting.size?(!previouslyExisting.has(name)||previouslySelected.has(name)):true;cb.dataset.group=name;cb.addEventListener('change',updateCount);
   const span=document.createElement('span');span.className='gname';span.textContent=name;
   const n=document.createElement('span');n.className='count';n.textContent=count+' Sender';
   label.append(cb,span,n);host.append(label);
