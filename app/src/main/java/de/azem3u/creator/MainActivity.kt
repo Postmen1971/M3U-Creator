@@ -181,6 +181,7 @@ private fun M3UCreatorScreen(contentResolver: ContentResolver) {
     ) {
         item {
             Text("M3U Creator", style = MaterialTheme.typography.headlineMedium)
+            Text("Version ${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.bodySmall)
             Text("Gruppen auswählen, eigene Gruppen bauen, M3U speichern – Streams bleiben unverändert.",
                 style = MaterialTheme.typography.bodyMedium)
         }

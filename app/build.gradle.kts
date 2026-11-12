@@ -8,12 +8,22 @@ android {
     namespace = "de.azem3u.creator"
     compileSdk = 35
 
+    signingConfigs {
+        // Fester Schlüssel, damit neue Versionen über die alte installiert werden können
+        create("stable") {
+            storeFile = file("m3u-creator.keystore")
+            storePassword = "m3ucreator"
+            keyAlias = "m3ucreator"
+            keyPassword = "m3ucreator"
+        }
+    }
+
     defaultConfig {
         applicationId = "de.azem3u.creator"
         minSdk = 26
         targetSdk = 35
-        versionCode = 3
-        versionName = "2.1"
+        versionCode = 4
+        versionName = "2.2"
     }
 
     compileOptions {
@@ -25,7 +35,14 @@ android {
         jvmTarget = "17"
     }
 
-    buildFeatures { compose = true }
+    buildTypes {
+        getByName("debug") { signingConfig = signingConfigs.getByName("stable") }
+    }
+
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
 }
 
 dependencies {
