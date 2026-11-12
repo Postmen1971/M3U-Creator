@@ -185,9 +185,9 @@ private fun M3UCreatorScreen(contentResolver: ContentResolver) {
                     } else {
                         val header = "#EXTM3U"
                         exportText = buildString {
-                            append(header).append('\\n')
+                            append(header).append(10.toChar())
                             chosen.forEach { entry ->
-                                entry.rawLines.forEach { append(it).append('\\n') }
+                                entry.rawLines.forEach { append(it).append(10.toChar()) }
                             }
                         }
                         val safeName = playlistName.trim().ifBlank { "Meine_Liste.m3u" }
