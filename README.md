@@ -26,3 +26,16 @@ Voraussetzungen: Android Studio mit JDK 17, Android SDK Platform 35.
 - Sehr große Playlists sind auf 50 MB begrenzt.
 - Der Prototyp übernimmt die Senderblöcke und deren Metadaten. Globale Kommentare vor dem ersten Sender werden nicht in die Exportdatei übernommen; `#EXTM3U` wird neu geschrieben.
 - Für produktiven Einsatz sollten zusätzliche Tests für ungewöhnliche M3U-Varianten, Zeichensätze und Server-Authentifizierung ergänzt werden.
+
+
+## Web-Version (HTML)
+Die browserbasierte Version liegt unter [web/index.html](web/index.html).
+- Auf dem PC oder Android-Gerät im Browser öffnen (oder lokal als HTML-Datei speichern).
+- Eine M3U-/M3U8-Datei vom Gerät auswählen oder versuchen, einen Playlist-Link zu laden.
+- Gruppen auswählen und die gefilterte Playlist herunterladen.
+- Die Verarbeitung der Playlist erfolgt lokal im Browser.
+
+**Hinweis zum Laden per URL:** Manche Playlist-Server erlauben aus Sicherheitsgründen keine Browser-Anfragen von anderen Webseiten (CORS). In diesem Fall bitte die Playlist-Datei zuerst herunterladen und anschließend über „Datei vom Gerät auswählen“ öffnen.
+
+### Als eigene Webseite veröffentlichen
+Im GitHub-Repository unter **Settings → Pages** als Quelle den Branch `main` und den Ordner `/web` auswählen. Danach stellt GitHub Pages die Web-Version unter der angezeigten Pages-Adresse bereit.
