@@ -100,7 +100,7 @@ function assignGroup(item,name){
  item.lines=item.lines.map(line=>{
   if(line.startsWith('#EXTINF')){
    found=true;
-   if(/\\bgroup-title="[^"]*"/i.test(line))return line.replace(/\\bgroup-title="[^"]*"/i,'group-title="'+name.replace(/\\/g,'\\\\').replace(/"/g,'&quot;')+'"');
+   if(/\bgroup-title="[^"]*"/i.test(line))return line.replace(/\bgroup-title="[^"]*"/i,'group-title="'+name.replace(/\\/g,'\\\\').replace(/"/g,'&quot;')+'"');
    const comma=line.indexOf(',');return comma>=0?line.slice(0,comma)+' group-title="'+name.replace(/\\/g,'\\\\').replace(/"/g,'&quot;')+'"'+line.slice(comma):line+' group-title="'+name+'"';
   }
   if(line.startsWith('#EXTGRP:'))return '#EXTGRP:'+name;
