@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101827">
+<title>M3U Creator</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#131e30;--panel2:#1a2940;--line:#293950;--txt:#edf3fb;--muted:#9fb0c5;--accent:#48c6a8;--blue:#6ea8fe;--danger:#ff8b8b}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#0b1220,#101d30);color:var(--txt);font:15px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
+main{max-width:980px;margin:auto;padding:28px 16px 56px}.top{display:flex;align-items:center;gap:13px;margin-bottom:22px}.logo{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#48c6a8,#2584a8);display:grid;place-items:center;color:#071a22;font-size:24px;font-weight:900}.top h1{font-size:25px;margin:0}.top p{margin:3px 0 0;color:var(--muted);font-size:13px}
+.card{background:rgba(19,30,48,.96);border:1px solid var(--line);border-radius:17px;padding:18px;margin:14px 0;box-shadow:0 12px 35px #0002}.card h2{font-size:17px;margin:0 0 13px}.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1;min-width:180px}input[type=url],input[type=search]{width:100%;background:#0c1626;border:1px solid var(--line);border-radius:10px;color:var(--txt);padding:12px;font:inherit;min-width:0}button,.filebtn{border:0;border-radius:10px;padding:11px 16px;font:600 14px system-ui;cursor:pointer;background:var(--accent);color:#06241d}button.secondary,.filebtn{background:var(--panel2);color:var(--txt);border:1px solid var(--line)}button:disabled{opacity:.45;cursor:not-allowed}.filebtn{display:inline-flex;align-items:center;justify-content:center}input[type=file]{display:none}.hint{color:var(--muted);font-size:12px;line-height:1.5;margin:10px 0 0}.status{font-size:13px;color:var(--muted);margin-top:12px;white-space:pre-wrap}.status.error{color:var(--danger)}.stats{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0}.stat{background:#0c1626;border:1px solid var(--line);padding:9px 12px;border-radius:10px;color:var(--muted);font-size:13px}.stat strong{color:var(--txt);font-size:16px;margin-right:5px}.toolbar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:12px 0}.toolbar input{flex:1;min-width:170px}.groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px;max-height:440px;overflow:auto;padding:2px}.group{display:flex;gap:10px;align-items:center;background:#0c1626;border:1px solid var(--line);border-radius:11px;padding:11px;min-width:0}.group input{accent-color:var(--accent);width:17px;height:17px;flex-shrink:0}.gname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}.count{color:var(--muted);font-size:12px}.empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}.export{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.export button{min-width:180px}.foot{color:var(--muted);font-size:12px;text-align:center;margin-top:24px}@media(max-width:560px){main{padding:18px 12px 40px}.card{padding:14px}.top h1{font-size:22px}.row>*{min-width:100%}}
+</style>
+</head>
+<body><main>
+<header class="top"><div class="logo">M</div><div><h1>M3U Creator</h1><p>Playlist laden · Gruppen auswählen · M3U exportieren</p></div></header>
+<section class="card"><h2>1. Playlist laden</h2>
+<div class="row"><input id="url" type="url" placeholder="https://server.de/playlist.m3u oder M3U8-Link" autocomplete="url"><button id="loadUrl">Link laden</button></div>
+<div class="row" style="margin-top:10px"><label class="filebtn" for="file">Datei vom Gerät auswählen</label><input id="file" type="file" accept=".m3u,.m3u8,.txt,audio/x-mpegurl,application/vnd.apple.mpegurl"><button class="secondary" id="clear">Zurücksetzen</button></div>
+<p class="hint">Tipp: Wenn ein Anbieter das Laden per Link im Browser blockiert (CORS), lade die M3U-Datei herunter und wähle sie hier aus. Die Verarbeitung erfolgt lokal im Browser.</p>
+<div id="status" class="status">Noch keine Playlist geladen.</div></section>
+<section class="card" id="results" hidden><h2>2. Sendergruppen auswählen</h2>
+<div class="stats"><div class="stat"><strong id="totalChannels">0</strong>Sender</div><div class="stat"><strong id="totalGroups">0</strong>Gruppen</div><div class="stat"><strong id="selectedChannels">0</strong>ausgewählte Sender</div></div>
+<div class="toolbar"><input id="search" type="search" placeholder="Gruppe suchen …"><button class="secondary" id="all">Alle auswählen</button><button class="secondary" id="none">Alle abwählen</button></div>
+<div id="groups" class="groups"></div></section>
+<section class="card" id="exportCard" hidden><h2>3. Gefilterte Playlist exportieren</h2><div class="export"><button id="export">M3U-Datei herunterladen</button><span class="hint" id="exportInfo">Die Stream-Adressen und Sender-Metadaten bleiben unverändert.</span></div></section>
+<p class="foot">M3U Creator · Web-Version · Keine Playlist-Daten werden an einen Server übertragen.</p>
+</main>
+<script>
+(()=> {
+const $=id=>document.getElementById(id);
+let entries=[],header='#EXTM3U',groups=new Map();
+function setStatus(msg,error=false){$('status').textContent=msg;$('status').className='status'+(error?' error':'')}
+function attr(line,name){const re=new RegExp('(?:^|\\s)'+name+'="([^"]*)"','i');return (line.match(re)||[])[1]||''}
+function parse(text){
+ const lines=text.replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n').split('\n');
+ entries=[];groups=new Map();header=lines.find(l=>l.trim().startsWith('#EXTM3U'))||'#EXTM3U';
+ let block=[],meta='',currentGroup='';
+ const flush=()=>{if(!block.length)return;const ext=block.find(l=>l.startsWith('#EXTINF'))||meta;let g=attr(ext,'group-title')||currentGroup||'Ohne Gruppe';const item={group:g,lines:block.slice()};entries.push(item);groups.set(g,(groups.get(g)||0)+1);block=[];meta='';currentGroup='';};
+ for(const line of lines){
+   if(line.trim().startsWith('#EXTM3U'))continue;
+   if(line.startsWith('#EXTINF')){flush();block=[line];meta=line;continue;}
+   if(line.startsWith('#EXTGRP:')){currentGroup=line.substring(8).trim();if(block.length)block.push(line);continue;}
+   if(block.length){block.push(line);if(line.trim()&&!line.trim().startsWith('#'))flush();}
+   else if(line.trim()&&!line.trim().startsWith('#')){block=[line];flush();}
+ }
+ flush();
+ render();
+}
+function render(){
+ $('results').hidden=false;$('exportCard').hidden=false;
+ $('totalChannels').textContent=entries.length;$('totalGroups').textContent=groups.size;
+ $('search').value='';const host=$('groups');host.innerHTML='';
+ for(const [name,count] of [...groups].sort((a,b)=>a[0].localeCompare(b[0],'de'))){
+  const label=document.createElement('label');label.className='group';label.dataset.name=name.toLocaleLowerCase('de');
+  const cb=document.createElement('input');cb.type='checkbox';cb.checked=true;cb.dataset.group=name;cb.addEventListener('change',updateCount);
+  const span=document.createElement('span');span.className='gname';span.textContent=name;
+  const n=document.createElement('span');n.className='count';n.textContent=count+' Sender';
+  label.append(cb,span,n);host.append(label);
+ }
+ updateCount();$('export').disabled=entries.length===0;
+}
+function updateCount(){const selected=new Set([...document.querySelectorAll('#groups input:checked')].map(x=>x.dataset.group));$('selectedChannels').textContent=entries.filter(e=>selected.has(e.group)).length;$('export').disabled=!selected.size;}
+function getSelected(){return new Set([...document.querySelectorAll('#groups input:checked')].map(x=>x.dataset.group))}
+$('loadUrl').addEventListener('click',async()=>{
+ const url=$('url').value.trim();if(!url){setStatus('Bitte zuerst einen M3U-Link eingeben.',true);return}
+ try{setStatus('Playlist wird geladen …');$('loadUrl').disabled=true;const res=await fetch(url);if(!res.ok)throw new Error('HTTP '+res.status);const txt=await res.text();if(!txt.includes('#EXTM3U'))throw new Error('Die Antwort sieht nicht wie eine M3U-Playlist aus.');parse(txt);setStatus(entries.length+' Sender in '+groups.size+' Gruppen geladen.');}
+ catch(e){setStatus('Link konnte nicht geladen werden: '+e.message+'\nMöglicherweise blockiert der Server Browser-Zugriffe (CORS). Bitte Datei herunterladen und lokal auswählen.',true)}
+ finally{$('loadUrl').disabled=false}
+});
+$('file').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{setStatus('Datei wird gelesen …');parse(await f.text());setStatus(f.name+': '+entries.length+' Sender in '+groups.size+' Gruppen geladen.')}catch(err){setStatus('Datei konnte nicht gelesen werden: '+err.message,true)}});
+$('clear').addEventListener('click',()=>{entries=[];groups.clear();$('url').value='';$('file').value='';$('results').hidden=true;$('exportCard').hidden=true;setStatus('Noch keine Playlist geladen.')});
+$('all').addEventListener('click',()=>{document.querySelectorAll('#groups input').forEach(x=>x.checked=true);updateCount()});
+$('none').addEventListener('click',()=>{document.querySelectorAll('#groups input').forEach(x=>x.checked=false);updateCount()});
+$('search').addEventListener('input',()=>{const q=$('search').value.toLocaleLowerCase('de');document.querySelectorAll('.group').forEach(el=>el.hidden=!el.dataset.name.includes(q))});
+$('export').addEventListener('click',()=>{
+ const selected=getSelected();const chosen=entries.filter(e=>selected.has(e.group));if(!chosen.length)return;
+ const out=[header,...chosen.flatMap(e=>e.lines)].join('\n')+'\n';const blob=new Blob([out],{type:'audio/x-mpegurl;charset=utf-8'});const a=document.createElement('a');const u=URL.createObjectURL(blob);a.href=u;a.download='playlist-gefiltert.m3u';document.body.append(a);a.click();a.remove();URL.revokeObjectURL(u);$('exportInfo').textContent=chosen.length+' Sender exportiert.';
+});
+})();
+</script></body></html>
