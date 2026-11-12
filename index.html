@@ -54,6 +54,7 @@ details.pgroup .plist{display:grid;gap:4px;margin-top:8px;color:var(--muted);fon
 <section class="card"><h2>1. Playlist laden</h2>
 <div class="row"><input id="url" type="url" placeholder="https://server.de/playlist.m3u oder M3U8-Link" autocomplete="url"><button id="loadUrl">Link laden</button></div>
 <div class="row" style="margin-top:10px"><label class="filebtn" for="file">Datei vom Gerät auswählen</label><input id="file" type="file" accept=".m3u,.m3u8,.txt,audio/x-mpegurl,application/vnd.apple.mpegurl,application/x-mpegurl,text/plain"><button class="secondary" id="clear">Zurücksetzen</button></div>
+<label class="hint" style="display:flex;gap:9px;align-items:center;margin-top:12px"><input type="checkbox" id="liveOnly" checked style="accent-color:var(--accent);width:17px;height:17px">Nur Live-TV laden (Filme und Serien überspringen – empfohlen bei großen Listen)</label>
 <details class="settings" id="proxyBox"><summary>Proxy-Einstellungen (wenn „Link laden“ scheitert)</summary>
 <p class="hint">Viele IPTV-Server erlauben keinen direkten Abruf aus dem Browser (CORS) oder liefern nur über <code>http://</code>. Dann lädt die Seite die Playlist über einen Proxy.</p>
 <input id="proxyUrl" class="field" type="url" placeholder="Eigener Proxy, z. B. https://m3u-proxy.deinname.workers.dev" style="margin-top:8px">
@@ -115,9 +116,10 @@ function makeEntry(lines){
  const group=attr(ext,'group-title')||(grp?grp.slice(8).trim():'')||'Ohne Gruppe';
  return {lines,group,title:ext?titleOf(ext):(lines.find(l=>l.trim()&&!l.trim().startsWith('#'))||'').trim()};
 }
-function parse(text){
+const VOD_URL=/\/(movie|series)\/|\.(mp4|mkv|avi|mov)(\?|$)/i;
+function parse(text,liveOnly=false){
  const lines=text.replace(/^﻿/,'').replace(/\r\n?/g,'\n').split('\n');
- const out=[];let hdr='';let pending=[];let block=null;
+ const out=[];let hdr='';let pending=[];let block=null;let skipped=0;
  for(const raw of lines){
   const line=raw.replace(/\s+$/,'');
   const t=line.trim();
@@ -126,20 +128,21 @@ function parse(text){
   if(isExtinf(t)){if(block)pending=[];block=[...pending,t];pending=[];continue}
   if(t.startsWith('#')){(block||pending).push(t);continue}
   // Stream-URL
+  if(liveOnly&&VOD_URL.test(t)){skipped++;if(block)block=null;else pending=[];continue}
   if(block){block.push(t);out.push(makeEntry(block));block=null}
   else{out.push(makeEntry([...pending,t]));pending=[]}
  }
- return {header:hdr||'#EXTM3U',entries:out};
+ return {header:hdr||'#EXTM3U',entries:out,skipped};
 }
 function rebuildGroups(){groups=new Map();for(const e of entries)groups.set(e.group,(groups.get(e.group)||0)+1)}
 function load(text,source){
- const p=parse(text);
+ const p=parse(text,$('liveOnly').checked);
  if(!p.entries.length)throw new Error('Keine Sender in der Playlist gefunden.');
  entries=p.entries;header=p.header;rebuildGroups();
  selectedGroups=new Set(groups.keys());selectedSenders=new Set();
  $('search').value='';$('senderSearch').value='';$('sourceGroup').value='';
  renderAll();
- setStatus(source+': '+entries.length+' Sender in '+groups.size+' Gruppen geladen.','ok');
+ setStatus(source+': '+entries.length+' Sender in '+groups.size+' Gruppen geladen.'+(p.skipped?' '+p.skipped+' Filme/Serien übersprungen.':''),'ok');
 }
 
 /* ---------- Laden per Link ---------- */

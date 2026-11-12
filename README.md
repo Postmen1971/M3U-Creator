@@ -47,7 +47,7 @@ Jeder Push auf `main` baut die APK neu und ersetzt den Download automatisch.
 Lokal bauen: Projekt in Android Studio öffnen (JDK 17, Android SDK 35) und `Run` drücken.
 
 Funktionen:
-- Laden per Link (auch `http://`, Weiterleitungen, große Listen bis 50 MB) – ohne CORS-Probleme.
+- Laden per Link (auch `http://`, Weiterleitungen, auch sehr große Listen) – ohne CORS-Probleme.
 - Playlist-Datei vom Gerät öffnen.
 - Gruppen suchen und auswählen.
 - Eigene Gruppe: Sender suchen, auswählen und in eine neue oder vorhandene Gruppe verschieben.
@@ -56,4 +56,4 @@ Funktionen:
 ## Grenzen
 - Kein Xtream-Codes-Login-Formular; den vollständigen M3U-Link (`get.php?username=…&password=…&type=m3u_plus`) verwenden.
 - Keine Wiedergabe, kein EPG-Download, keine Umgehung von DRM/Zugriffsschutz.
-- Playlists bis 50 MB.
+- Sehr große Listen (mit Filmen/Serien): Option „Nur Live-TV laden“ eingeschaltet lassen.

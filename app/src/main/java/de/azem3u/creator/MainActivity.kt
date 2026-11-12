@@ -23,8 +23,9 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.ByteArrayOutputStream
+import java.io.BufferedReader
 import java.io.InputStream
+import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -48,10 +49,10 @@ internal data class PlaylistEntry(
 
 internal data class ParsedPlaylist(
     val header: String,
-    val entries: List<PlaylistEntry>
+    val entries: List<PlaylistEntry>,
+    val skippedVod: Int = 0
 )
 
-private const val MAX_BYTES = 50L * 1024 * 1024
 private const val SENDER_LIMIT = 300
 
 @Composable
@@ -68,6 +69,7 @@ private fun M3UCreatorScreen(contentResolver: ContentResolver) {
     var tab by remember { mutableIntStateOf(0) }
     var status by remember { mutableStateOf("M3U-Link einfügen oder Datei öffnen.") }
     var loading by remember { mutableStateOf(false) }
+    var liveOnly by remember { mutableStateOf(true) }
     var exportText by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
 
@@ -80,8 +82,7 @@ private fun M3UCreatorScreen(contentResolver: ContentResolver) {
         if (q.isEmpty()) entries else entries.filter { it.title.contains(q, true) || it.group.contains(q, true) }
     }
 
-    fun applyPlaylist(text: String, source: String) {
-        val parsed = parseM3U(text)
+    fun applyPlaylist(parsed: ParsedPlaylist, source: String) {
         if (parsed.entries.isEmpty()) {
             status = "$source: Keine Sender gefunden. Ist das wirklich eine M3U-Playlist?"
             return
@@ -91,7 +92,8 @@ private fun M3UCreatorScreen(contentResolver: ContentResolver) {
         selectedGroups = parsed.entries.map { it.group }.toSet()
         selectedSenders = emptySet()
         groupSearch = ""; senderSearch = ""
-        status = "$source: ${parsed.entries.size} Sender in ${selectedGroups.size} Gruppen geladen."
+        status = "$source: ${parsed.entries.size} Sender in ${selectedGroups.size} Gruppen geladen." +
+            (if (parsed.skippedVod > 0) " ${parsed.skippedVod} Filme/Serien übersprungen." else "")
     }
 
     val saveLauncher = rememberLauncherForActivityResult(
@@ -119,11 +121,14 @@ private fun M3UCreatorScreen(contentResolver: ContentResolver) {
         status = "Datei wird gelesen …"
         scope.launch {
             try {
-                val text = withContext(Dispatchers.IO) {
-                    contentResolver.openInputStream(uri)?.use { readLimited(it) }
+                val only = liveOnly
+                val parsed = withContext(Dispatchers.IO) {
+                    contentResolver.openInputStream(uri)?.use { parseStream(it, only) }
                         ?: error("Datei konnte nicht geöffnet werden.")
                 }
-                applyPlaylist(text, "Datei")
+                applyPlaylist(parsed, "Datei")
+            } catch (e: OutOfMemoryError) {
+                status = "Die Liste ist zu groß für dieses Gerät. Bitte „Nur Live-TV“ einschalten."
             } catch (e: Exception) {
                 status = "Datei konnte nicht gelesen werden: ${e.message ?: "Unbekannter Fehler"}"
             } finally {
@@ -142,8 +147,11 @@ private fun M3UCreatorScreen(contentResolver: ContentResolver) {
         status = "Playlist wird geladen …"
         scope.launch {
             try {
-                val text = withContext(Dispatchers.IO) { downloadText(input) }
-                applyPlaylist(text, "Link")
+                val only = liveOnly
+                val parsed = withContext(Dispatchers.IO) { downloadPlaylist(input, only) }
+                applyPlaylist(parsed, "Link")
+            } catch (e: OutOfMemoryError) {
+                status = "Die Liste ist zu groß für dieses Gerät. Bitte „Nur Live-TV“ einschalten."
             } catch (e: Exception) {
                 status = "Laden fehlgeschlagen: ${e.message ?: e.javaClass.simpleName}"
             } finally {
@@ -193,6 +201,19 @@ private fun M3UCreatorScreen(contentResolver: ContentResolver) {
                     modifier = Modifier.weight(1f)) { Text(if (loading) "Lädt …" else "Link laden") }
                 OutlinedButton(onClick = { openLauncher.launch(arrayOf("*/*")) }, enabled = !loading,
                     modifier = Modifier.weight(1f)) { Text("Datei öffnen") }
+            }
+        }
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth().clickable(enabled = !loading) { liveOnly = !liveOnly },
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(checked = liveOnly, onCheckedChange = { liveOnly = it }, enabled = !loading)
+                Column {
+                    Text("Nur Live-TV laden")
+                    Text("Filme und Serien beim Laden überspringen – empfohlen bei sehr großen Listen",
+                        style = MaterialTheme.typography.bodySmall)
+                }
             }
         }
         item { Text(status, style = MaterialTheme.typography.bodySmall) }
@@ -311,27 +332,18 @@ private fun CheckRow(checked: Boolean, title: String, subtitle: String, onToggle
     }
 }
 
-private fun readLimited(input: InputStream): String {
-    val output = ByteArrayOutputStream()
-    val buffer = ByteArray(16 * 1024)
-    var total = 0L
-    while (true) {
-        val count = input.read(buffer)
-        if (count < 0) break
-        total += count
-        if (total > MAX_BYTES) error("Playlist ist größer als 50 MB.")
-        output.write(buffer, 0, count)
+private fun parseStream(input: InputStream, liveOnly: Boolean): ParsedPlaylist =
+    BufferedReader(InputStreamReader(input, Charsets.UTF_8), 64 * 1024).use { reader ->
+        parseLines(reader.lineSequence(), liveOnly)
     }
-    return output.toByteArray().toString(Charsets.UTF_8).removePrefix("\uFEFF")
-}
 
-private fun downloadText(address: String): String {
+private fun downloadPlaylist(address: String, liveOnly: Boolean): ParsedPlaylist {
     var current = URL(address)
     repeat(6) {
         val connection = (current.openConnection() as HttpURLConnection).apply {
             requestMethod = "GET"
             connectTimeout = 20_000
-            readTimeout = 60_000
+            readTimeout = 120_000
             instanceFollowRedirects = false
             setRequestProperty("User-Agent", "VLC/3.0.20 LibVLC/3.0.20")
             setRequestProperty("Accept", "*/*")
@@ -344,14 +356,15 @@ private fun downloadText(address: String): String {
                 return@repeat
             }
             if (code !in 200..299) error("Server antwortet mit HTTP $code")
-            if (connection.contentLengthLong > MAX_BYTES) error("Playlist ist größer als 50 MB.")
-            return connection.inputStream.use { readLimited(it) }
+            return connection.inputStream.use { parseStream(it, liveOnly) }
         } finally {
             connection.disconnect()
         }
     }
     error("Zu viele Weiterleitungen.")
 }
+
+private val VOD_URL = Regex("/(movie|series)/|\\.(mp4|mkv|avi|mov)(\\?|$)", RegexOption.IGNORE_CASE)
 
 private val GROUP_TITLE = Regex("group-title\\s*=\\s*\"([^\"]*)\"", RegexOption.IGNORE_CASE)
 private val TVG_NAME = Regex("tvg-name\\s*=\\s*\"([^\"]*)\"", RegexOption.IGNORE_CASE)
@@ -384,14 +397,18 @@ private fun makeEntry(id: Int, lines: List<String>): PlaylistEntry {
     return PlaylistEntry(id, lines, group, title)
 }
 
-internal fun parseM3U(text: String): ParsedPlaylist {
+internal fun parseM3U(text: String, liveOnly: Boolean = false): ParsedPlaylist =
+    parseLines(text.lineSequence(), liveOnly)
+
+internal fun parseLines(lines: Sequence<String>, liveOnly: Boolean): ParsedPlaylist {
     val entries = mutableListOf<PlaylistEntry>()
     var header = ""
     var pending = mutableListOf<String>()
     var block: MutableList<String>? = null
 
-    for (raw in text.removePrefix("\uFEFF").lineSequence()) {
-        val line = raw.trim()
+    var skipped = 0
+    for (raw in lines) {
+        val line = raw.removePrefix("\uFEFF").trim()
         if (line.isEmpty()) continue
         when {
             line.startsWith("#EXTM3U", ignoreCase = true) -> if (header.isEmpty()) header = line
@@ -403,7 +420,10 @@ internal fun parseM3U(text: String): ParsedPlaylist {
             line.startsWith("#") -> (block ?: pending).add(line)
             else -> {
                 val current = block
-                if (current != null) {
+                if (liveOnly && VOD_URL.containsMatchIn(line)) {
+                    skipped++
+                    if (current != null) block = null else pending = mutableListOf()
+                } else if (current != null) {
                     current.add(line)
                     entries += makeEntry(entries.size, current)
                     block = null
@@ -414,7 +434,7 @@ internal fun parseM3U(text: String): ParsedPlaylist {
             }
         }
     }
-    return ParsedPlaylist(header.ifEmpty { "#EXTM3U" }, entries)
+    return ParsedPlaylist(header.ifEmpty { "#EXTM3U" }, entries, skipped)
 }
 
 internal fun assignGroup(entry: PlaylistEntry, name: String): PlaylistEntry {

@@ -11,8 +11,6 @@ const ALLOWED_ORIGINS = [
   'null', // lokal geöffnete HTML-Datei (file://)
 ];
 
-const MAX_BYTES = 50 * 1024 * 1024; // 50 MB
-
 function corsHeaders(origin) {
   return {
     'Access-Control-Allow-Origin': origin,
@@ -52,9 +50,6 @@ export default {
     } catch (e) {
       return new Response('Server nicht erreichbar: ' + e.message, { status: 502, headers: cors });
     }
-
-    const len = Number(upstream.headers.get('Content-Length') || 0);
-    if (len > MAX_BYTES) return new Response('Playlist größer als 50 MB', { status: 413, headers: cors });
 
     return new Response(upstream.body, {
       status: upstream.status,
