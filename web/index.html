@@ -28,7 +28,7 @@ main{max-width:980px;margin:auto;padding:28px 16px 56px}.top{display:flex;align-
 <div class="toolbar"><select id="sourceGroup" class="field"><option value="">Alle bisherigen Gruppen</option></select><input id="senderSearch" type="search" placeholder="Sender suchen …"></div>
 <div class="toolbar"><button class="secondary" id="selectVisible">Angezeigte auswählen</button><button class="secondary" id="clearSenderSelection">Auswahl aufheben</button><span class="hint" id="senderSelectionCount">0 Sender ausgewählt</span></div>
 <div id="senderList" class="senderlist"></div>
-<div class="row"><input id="newGroupName" class="field" type="text" placeholder="Name der neuen Gruppe"><button id="makeGroup">Auswahl in Gruppe übernehmen</button></div>
+<div class="row"><select id="targetGroup" class="field"><option value="">Neue Gruppe erstellen …</option></select><input id="newGroupName" class="field" type="text" placeholder="Name der neuen Gruppe"><button id="makeGroup">Auswahl übernehmen</button></div>
 <p class="hint">Die ausgewählten Sender werden in der Export-Playlist der neuen Gruppe zugeordnet. Nicht ausgewählte Sender bleiben in ihrer bisherigen Gruppe.</p></section>
 <section class="card" id="exportCard" hidden><h2>4. Gefilterte Playlist exportieren</h2><div class="export"><button id="export">M3U-Datei herunterladen</button><span class="hint" id="exportInfo">Die Stream-Adressen und Sender-Metadaten bleiben unverändert.</span></div></section>
 <p class="foot">M3U Creator · Web-Version · Keine Playlist-Daten werden an einen Server übertragen.</p>
@@ -70,6 +70,10 @@ function render(){
  const source=$('sourceGroup');const old=source.value;source.innerHTML='<option value="">Alle bisherigen Gruppen</option>';
  [...groups.keys()].sort((a,b)=>a.localeCompare(b,'de')).forEach(name=>{const o=document.createElement('option');o.value=name;o.textContent=name;source.append(o)});
  if(groups.has(old))source.value=old;
+ const target=$('targetGroup');const oldTarget=target.value;target.innerHTML='<option value="">Neue Gruppe erstellen …</option>';
+ [...groups.keys()].sort((a,b)=>a.localeCompare(b,'de')).forEach(name=>{const o=document.createElement('option');o.value=name;o.textContent='Vorhandene Gruppe: '+name;target.append(o)});
+ if(groups.has(oldTarget))target.value=oldTarget;
+ $('newGroupName').disabled=!!target.value;$('newGroupName').placeholder=target.value?'Optionaler Name – wird nicht benötigt':'Name der neuen Gruppe';
  renderSenders();updateCount();$('export').disabled=entries.length===0;
 }
 function channelTitle(item){
@@ -127,15 +131,17 @@ $('sourceGroup').addEventListener('change',renderSenders);
 $('senderSearch').addEventListener('input',renderSenders);
 $('selectVisible').addEventListener('click',()=>{document.querySelectorAll('#senderList input[data-index]').forEach(cb=>{cb.checked=true;selectedSenders.add(Number(cb.dataset.index))});updateSenderSelectionCount()});
 $('clearSenderSelection').addEventListener('click',()=>{selectedSenders.clear();renderSenders()});
+$('targetGroup').addEventListener('change',()=>{const existing=!!$('targetGroup').value;$('newGroupName').disabled=existing;$('newGroupName').placeholder=existing?'Optionaler Name – wird nicht benötigt':'Name der neuen Gruppe';});
 $('makeGroup').addEventListener('click',()=>{
- const name=$('newGroupName').value.trim();
- if(!name){setStatus('Bitte einen Namen für die neue Gruppe eingeben.',true);return}
+ const target=$('targetGroup').value;
+ const name=target||$('newGroupName').value.trim();
+ if(!name){setStatus('Bitte einen Namen für die neue Gruppe eingeben oder eine vorhandene Zielgruppe auswählen.',true);return}
  if(!selectedSenders.size){setStatus('Bitte zuerst mindestens einen Sender auswählen.',true);return}
  const chosen=[...selectedSenders];
  chosen.forEach(index=>assignGroup(entries[index],name));
- selectedSenders.clear();$('newGroupName').value='';
+ selectedSenders.clear();$('newGroupName').value='';$('targetGroup').value='';
  groups=new Map();entries.forEach(item=>groups.set(item.group,(groups.get(item.group)||0)+1));
- render();setStatus(chosen.length+' Sender wurden der Gruppe „'+name+'“ zugeordnet. Du kannst weitere Gruppen erstellen.');
+ render();setStatus(chosen.length+' Sender wurden der Gruppe „'+name+'“ zugeordnet. Du kannst weitere Gruppen erstellen oder vorhandene Gruppen zusammenführen.');
 });
 
 $('export').addEventListener('click',()=>{
