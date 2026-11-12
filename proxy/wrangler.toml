@@ -1,0 +1,5 @@
+name = "m3u-proxy"
+main = "worker.js"
+compatibility_date = "2026-11-01"
+# Damit Links mit Port (z. B. :8080 oder :25461) richtig abgerufen werden
+compatibility_flags = ["allow_custom_ports"]

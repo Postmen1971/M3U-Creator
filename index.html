@@ -6,166 +6,343 @@
 <meta name="theme-color" content="#101827">
 <title>M3U Creator</title>
 <style>
-:root{color-scheme:dark;--bg:#0b1220;--panel:#131e30;--panel2:#1a2940;--line:#293950;--txt:#edf3fb;--muted:#9fb0c5;--accent:#48c6a8;--blue:#6ea8fe;--danger:#ff8b8b}
-*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#0b1220,#101d30);color:var(--txt);font:15px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
-main{max-width:980px;margin:auto;padding:28px 16px 56px}.top{display:flex;align-items:center;gap:13px;margin-bottom:22px}.logo{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#48c6a8,#2584a8);display:grid;place-items:center;color:#071a22;font-size:24px;font-weight:900}.top h1{font-size:25px;margin:0}.top p{margin:3px 0 0;color:var(--muted);font-size:13px}
-.card{background:rgba(19,30,48,.96);border:1px solid var(--line);border-radius:17px;padding:18px;margin:14px 0;box-shadow:0 12px 35px #0002}.card h2{font-size:17px;margin:0 0 13px}.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1;min-width:180px}input[type=url],input[type=search]{width:100%;background:#0c1626;border:1px solid var(--line);border-radius:10px;color:var(--txt);padding:12px;font:inherit;min-width:0}button,.filebtn{border:0;border-radius:10px;padding:11px 16px;font:600 14px system-ui;cursor:pointer;background:var(--accent);color:#06241d}button.secondary,.filebtn{background:var(--panel2);color:var(--txt);border:1px solid var(--line)}button:disabled{opacity:.45;cursor:not-allowed}.filebtn{display:inline-flex;align-items:center;justify-content:center}input[type=file]{display:none}.hint{color:var(--muted);font-size:12px;line-height:1.5;margin:10px 0 0}.status{font-size:13px;color:var(--muted);margin-top:12px;white-space:pre-wrap}.status.error{color:var(--danger)}.stats{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0}.stat{background:#0c1626;border:1px solid var(--line);padding:9px 12px;border-radius:10px;color:var(--muted);font-size:13px}.stat strong{color:var(--txt);font-size:16px;margin-right:5px}.toolbar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:12px 0}.toolbar input{flex:1;min-width:170px}.groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px;max-height:440px;overflow:auto;padding:2px}.group{display:flex;gap:10px;align-items:center;background:#0c1626;border:1px solid var(--line);border-radius:11px;padding:11px;min-width:0}.group input{accent-color:var(--accent);width:17px;height:17px;flex-shrink:0}.gname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}.count{color:var(--muted);font-size:12px}.empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}.senderlist{display:grid;gap:6px;max-height:420px;overflow:auto;margin:10px 0}.sender{display:flex;align-items:center;gap:9px;padding:9px 10px;background:#0c1626;border:1px solid var(--line);border-radius:9px;min-width:0}.sender input{accent-color:var(--accent);flex-shrink:0}.sender .sname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sender .sgroup{color:var(--muted);font-size:11px;white-space:nowrap}.field{width:100%;background:#0c1626;border:1px solid var(--line);border-radius:10px;color:var(--txt);padding:12px;font:inherit;min-width:0}.export{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.export button{min-width:180px}.foot{color:var(--muted);font-size:12px;text-align:center;margin-top:24px}@media(max-width:560px){main{padding:18px 12px 40px}.card{padding:14px}.top h1{font-size:22px}.row>*{min-width:100%}}
+:root{color-scheme:dark;--bg:#0b1220;--panel:#131e30;--panel2:#1a2940;--line:#293950;--txt:#edf3fb;--muted:#9fb0c5;--accent:#48c6a8;--danger:#ff8b8b;--warn:#f5c26b}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(145deg,#0b1220,#101d30);color:var(--txt);font:15px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
+main{max-width:980px;margin:auto;padding:28px 16px 56px}
+.top{display:flex;align-items:center;gap:13px;margin-bottom:22px}
+.logo{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#48c6a8,#2584a8);display:grid;place-items:center;color:#071a22;font-size:24px;font-weight:900}
+.top h1{font-size:25px;margin:0}.top p{margin:3px 0 0;color:var(--muted);font-size:13px}
+.card{background:rgba(19,30,48,.96);border:1px solid var(--line);border-radius:17px;padding:18px;margin:14px 0;box-shadow:0 12px 35px #0002}
+.card h2{font-size:17px;margin:0 0 13px}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1;min-width:180px}
+.field,input[type=url],input[type=search],input[type=text]{width:100%;background:#0c1626;border:1px solid var(--line);border-radius:10px;color:var(--txt);padding:12px;font:inherit;min-width:0}
+button,.filebtn{border:0;border-radius:10px;padding:11px 16px;font:600 14px system-ui;cursor:pointer;background:var(--accent);color:#06241d}
+button.secondary,.filebtn{background:var(--panel2);color:var(--txt);border:1px solid var(--line)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.filebtn{display:inline-flex;align-items:center;justify-content:center}
+input[type=file]{display:none}
+.hint{color:var(--muted);font-size:12px;line-height:1.5;margin:10px 0 0}
+.warn{color:var(--warn)}
+.status{font-size:13px;color:var(--muted);margin-top:12px;white-space:pre-wrap}.status.error{color:var(--danger)}.status.ok{color:var(--accent)}
+.stats{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0}
+.stat{background:#0c1626;border:1px solid var(--line);padding:9px 12px;border-radius:10px;color:var(--muted);font-size:13px}.stat strong{color:var(--txt);font-size:16px;margin-right:5px}
+.toolbar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:12px 0}.toolbar>input,.toolbar>select{flex:1;min-width:170px}
+.groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px;max-height:440px;overflow:auto;padding:2px}
+.group{display:flex;gap:10px;align-items:center;background:#0c1626;border:1px solid var(--line);border-radius:11px;padding:11px;min-width:0}
+.group input,.sender input{accent-color:var(--accent);width:17px;height:17px;flex-shrink:0}
+.gname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}.count{color:var(--muted);font-size:12px}
+.empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}
+.senderlist{display:grid;gap:6px;max-height:420px;overflow:auto;margin:10px 0}
+.sender{display:flex;align-items:center;gap:9px;padding:9px 10px;background:#0c1626;border:1px solid var(--line);border-radius:9px;min-width:0}
+.sname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sgroup{color:var(--muted);font-size:11px;white-space:nowrap;max-width:40%;overflow:hidden;text-overflow:ellipsis}
+.more{color:var(--muted);font-size:12px;text-align:center;padding:8px}
+details.settings{margin-top:12px;border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:#0c1626}
+details.settings summary{cursor:pointer;font-weight:600;font-size:14px}
+details.settings label.check{display:flex;gap:9px;align-items:flex-start;margin-top:10px;font-size:13px}
+details.pgroup{background:#0c1626;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+details.pgroup summary{cursor:pointer;font-weight:600}
+details.pgroup .plist{display:grid;gap:4px;margin-top:8px;color:var(--muted);font-size:13px}
+.export{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.export button{min-width:180px}
+.foot{color:var(--muted);font-size:12px;text-align:center;margin-top:24px}
+@media(max-width:560px){main{padding:18px 12px 40px}.card{padding:14px}.top h1{font-size:22px}.row>*{min-width:100%}}
 </style>
 </head>
 <body><main>
 <header class="top"><div class="logo">M</div><div><h1>M3U Creator</h1><p>Playlist laden · Gruppen auswählen · M3U exportieren</p></div></header>
+
 <section class="card"><h2>1. Playlist laden</h2>
 <div class="row"><input id="url" type="url" placeholder="https://server.de/playlist.m3u oder M3U8-Link" autocomplete="url"><button id="loadUrl">Link laden</button></div>
-<div class="row" style="margin-top:10px"><label class="filebtn" for="file">Datei vom Gerät auswählen</label><input id="file" type="file" accept=".m3u,.m3u8,.txt,audio/x-mpegurl,application/vnd.apple.mpegurl"><button class="secondary" id="clear">Zurücksetzen</button></div>
-<p class="hint">Tipp: Wenn ein Anbieter das Laden per Link im Browser blockiert (CORS), lade die M3U-Datei herunter und wähle sie hier aus. Die Verarbeitung erfolgt lokal im Browser.</p>
+<div class="row" style="margin-top:10px"><label class="filebtn" for="file">Datei vom Gerät auswählen</label><input id="file" type="file" accept=".m3u,.m3u8,.txt,audio/x-mpegurl,application/vnd.apple.mpegurl,application/x-mpegurl,text/plain"><button class="secondary" id="clear">Zurücksetzen</button></div>
+<details class="settings" id="proxyBox"><summary>Proxy-Einstellungen (wenn „Link laden“ scheitert)</summary>
+<p class="hint">Viele IPTV-Server erlauben keinen direkten Abruf aus dem Browser (CORS) oder liefern nur über <code>http://</code>. Dann lädt die Seite die Playlist über einen Proxy.</p>
+<input id="proxyUrl" class="field" type="url" placeholder="Eigener Proxy, z. B. https://m3u-proxy.deinname.workers.dev" style="margin-top:8px">
+<p class="hint">Empfohlen: eigener kostenloser Cloudflare-Worker (Anleitung in der README im GitHub-Repo). Dann gehen deine Zugangsdaten nur über deinen eigenen Proxy.</p>
+<label class="check"><input type="checkbox" id="publicProxy"><span>Öffentliche Proxys als Notlösung erlauben<br><span class="warn">Achtung: Der Link (inkl. Benutzername/Passwort im Link) wird dabei an fremde Dienste geschickt.</span></span></label>
+</details>
 <div id="status" class="status">Noch keine Playlist geladen.</div></section>
+
 <section class="card" id="results" hidden><h2>2. Sendergruppen auswählen</h2>
 <div class="stats"><div class="stat"><strong id="totalChannels">0</strong>Sender</div><div class="stat"><strong id="totalGroups">0</strong>Gruppen</div><div class="stat"><strong id="selectedChannels">0</strong>ausgewählte Sender</div></div>
-<div class="toolbar"><input id="search" type="search" placeholder="Gruppe suchen …"><button class="secondary" id="all">Alle auswählen</button><button class="secondary" id="none">Alle abwählen</button></div>
+<div class="toolbar"><input id="search" type="search" placeholder="Gruppe suchen …"><button class="secondary" id="all">Alle (Treffer) auswählen</button><button class="secondary" id="none">Alle (Treffer) abwählen</button></div>
 <div id="groups" class="groups"></div></section>
+
 <section class="card" id="customCard" hidden><h2>3. Eigene Gruppen zusammenstellen</h2>
-<p class="hint">Wähle einzelne Sender aus verschiedenen bisherigen Gruppen aus und verschiebe sie in eine neue Gruppe. Du kannst den Vorgang beliebig oft wiederholen, um mehrere eigene Gruppen zu erstellen.</p>
-<div class="toolbar"><select id="sourceGroup" class="field"><option value="">Alle bisherigen Gruppen</option></select><input id="senderSearch" type="search" placeholder="Sender suchen …"></div>
-<div class="toolbar"><button class="secondary" id="selectVisible">Angezeigte auswählen</button><button class="secondary" id="clearSenderSelection">Auswahl aufheben</button><span class="hint" id="senderSelectionCount">0 Sender ausgewählt</span></div>
+<p class="hint">Wähle einzelne Sender aus verschiedenen Gruppen aus und verschiebe sie in eine neue oder vorhandene Gruppe. Beliebig oft wiederholbar.</p>
+<div class="toolbar"><select id="sourceGroup" class="field"><option value="">Alle Gruppen</option></select><input id="senderSearch" type="search" placeholder="Sender suchen …"></div>
+<div class="toolbar"><button class="secondary" id="selectVisible">Alle Treffer auswählen</button><button class="secondary" id="clearSenderSelection">Auswahl aufheben</button><span class="hint" id="senderSelectionCount" style="margin:0">0 Sender ausgewählt</span></div>
 <div id="senderList" class="senderlist"></div>
 <div class="row"><select id="targetGroup" class="field"><option value="">Neue Gruppe erstellen …</option></select><input id="newGroupName" class="field" type="text" placeholder="Name der neuen Gruppe"><button id="makeGroup">Auswahl übernehmen</button></div>
-<p class="hint">Die ausgewählten Sender werden in der Export-Playlist der neuen Gruppe zugeordnet. Nicht ausgewählte Sender bleiben in ihrer bisherigen Gruppe.</p></section>
-<section class="card" id="previewCard" hidden><h2>4. Vorschau der fertigen Playlist</h2><p class="hint">Hier siehst du die ausgewählten Gruppen und Sender so, wie sie in die Exportdatei übernommen werden.</p><div class="toolbar"><button class="secondary" id="refreshPreview">Vorschau aktualisieren</button><span class="hint" id="previewSummary"></span></div><div id="previewList" class="senderlist"></div></section>
-<section class="card" id="exportCard" hidden><h2>5. Gefilterte Playlist exportieren</h2><div class="export"><button id="export">M3U-Datei herunterladen</button><span class="hint" id="exportInfo">Die Stream-Adressen und Sender-Metadaten bleiben unverändert.</span></div></section>
-<p class="foot">M3U Creator · Web-Version · Keine Playlist-Daten werden an einen Server übertragen.</p>
+</section>
+
+<section class="card" id="previewCard" hidden><h2>4. Vorschau der fertigen Playlist</h2>
+<p class="hint" id="previewSummary"></p>
+<div id="previewList" class="senderlist" style="max-height:480px"></div></section>
+
+<section class="card" id="exportCard" hidden><h2>5. Gefilterte Playlist exportieren</h2>
+<div class="row" style="margin-bottom:10px"><input id="fileName" class="field" type="text" value="playlist-gefiltert.m3u" placeholder="Dateiname"></div>
+<div class="export"><button id="export">M3U-Datei herunterladen</button><span class="hint" id="exportInfo" style="margin:0">Stream-Adressen und Sender-Metadaten bleiben unverändert.</span></div></section>
+
+<p class="foot">M3U Creator · Web-Version · Die Verarbeitung erfolgt lokal im Browser.</p>
 </main>
 <script>
-(()=> {
+(()=>{
+'use strict';
 const $=id=>document.getElementById(id);
-let entries=[],header='#EXTM3U',groups=new Map(),selectedSenders=new Set();
-function setStatus(msg,error=false){$('status').textContent=msg;$('status').className='status'+(error?' error':'')}
-function attr(line,name){const re=new RegExp('(?:^|\\s)'+name+'="([^"]*)"','i');return (line.match(re)||[])[1]||''}
+const LIST_LIMIT=300, PREVIEW_ITEM_LIMIT=500;
+let entries=[], header='#EXTM3U', groups=new Map(), selectedGroups=new Set(), selectedSenders=new Set();
+
+/* ---------- Einstellungen (localStorage, falls verfügbar) ---------- */
+const store={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+$('proxyUrl').value=store.get('m3u.proxy','');
+$('publicProxy').checked=store.get('m3u.publicProxy','0')==='1';
+$('url').value=store.get('m3u.lastUrl','');
+$('proxyUrl').addEventListener('change',()=>store.set('m3u.proxy',$('proxyUrl').value.trim()));
+$('publicProxy').addEventListener('change',()=>store.set('m3u.publicProxy',$('publicProxy').checked?'1':'0'));
+
+function setStatus(msg,kind=''){const s=$('status');s.textContent=msg;s.className='status'+(kind?' '+kind:'')}
+
+/* ---------- Parser ---------- */
+const isExtinf=l=>/^#EXTINF/i.test(l);
+const isExtgrp=l=>/^#EXTGRP:/i.test(l);
+function attr(line,name){const m=line.match(new RegExp('(?:^|[\\s,])'+name+'\\s*=\\s*"([^"]*)"','i'));return m?m[1].trim():''}
+// Komma nach den Attributen finden (Kommas innerhalb von "..." ignorieren)
+function titleComma(ext){let q=false;for(let i=0;i<ext.length;i++){const c=ext[i];if(c==='"')q=!q;else if(c===','&&!q)return i}return -1}
+function titleOf(ext){const i=titleComma(ext);const t=i>=0?ext.slice(i+1).trim():'';return t||attr(ext,'tvg-name')||'Sender ohne Namen'}
+function makeEntry(lines){
+ const ext=lines.find(isExtinf)||'';
+ const grp=lines.find(isExtgrp);
+ const group=attr(ext,'group-title')||(grp?grp.slice(8).trim():'')||'Ohne Gruppe';
+ return {lines,group,title:ext?titleOf(ext):(lines.find(l=>l.trim()&&!l.trim().startsWith('#'))||'').trim()};
+}
 function parse(text){
- const lines=text.replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n').split('\n');
- entries=[];groups=new Map();header=lines.find(l=>l.trim().startsWith('#EXTM3U'))||'#EXTM3U';
- let block=[],meta='',currentGroup='';
- const flush=()=>{if(!block.length)return;const ext=block.find(l=>l.startsWith('#EXTINF'))||meta;let g=attr(ext,'group-title')||currentGroup||'Ohne Gruppe';const item={group:g,lines:block.slice()};entries.push(item);groups.set(g,(groups.get(g)||0)+1);block=[];meta='';currentGroup='';};
- for(const line of lines){
-   if(line.trim().startsWith('#EXTM3U'))continue;
-   if(line.startsWith('#EXTINF')){flush();block=[line];meta=line;continue;}
-   if(line.startsWith('#EXTGRP:')){currentGroup=line.substring(8).trim();if(block.length)block.push(line);continue;}
-   if(block.length){block.push(line);if(line.trim()&&!line.trim().startsWith('#'))flush();}
-   else if(line.trim()&&!line.trim().startsWith('#')){block=[line];flush();}
+ const lines=text.replace(/^﻿/,'').replace(/\r\n?/g,'\n').split('\n');
+ const out=[];let hdr='';let pending=[];let block=null;
+ for(const raw of lines){
+  const line=raw.replace(/\s+$/,'');
+  const t=line.trim();
+  if(!t)continue;
+  if(/^#EXTM3U/i.test(t)){if(!hdr)hdr=t;continue}
+  if(isExtinf(t)){if(block)pending=[];block=[...pending,t];pending=[];continue}
+  if(t.startsWith('#')){(block||pending).push(t);continue}
+  // Stream-URL
+  if(block){block.push(t);out.push(makeEntry(block));block=null}
+  else{out.push(makeEntry([...pending,t]));pending=[]}
  }
- flush();
- render();
+ return {header:hdr||'#EXTM3U',entries:out};
 }
-function render(){
- const previouslySelected=new Set([...document.querySelectorAll('#groups input:checked')].map(x=>x.dataset.group));
- const previouslyExisting=new Set([...document.querySelectorAll('#groups input')].map(x=>x.dataset.group));
- $('results').hidden=false;$('customCard').hidden=false;$('exportCard').hidden=false;
- $('totalChannels').textContent=entries.length;$('totalGroups').textContent=groups.size;
- $('search').value='';const host=$('groups');host.innerHTML='';
- for(const [name,count] of [...groups].sort((a,b)=>a[0].localeCompare(b[0],'de'))){
-  const label=document.createElement('label');label.className='group';label.dataset.name=name.toLocaleLowerCase('de');
-  const cb=document.createElement('input');cb.type='checkbox';cb.checked=previouslyExisting.size?(!previouslyExisting.has(name)||previouslySelected.has(name)):true;cb.dataset.group=name;cb.addEventListener('change',updateCount);
-  const span=document.createElement('span');span.className='gname';span.textContent=name;
-  const n=document.createElement('span');n.className='count';n.textContent=count+' Sender';
-  label.append(cb,span,n);host.append(label);
+function rebuildGroups(){groups=new Map();for(const e of entries)groups.set(e.group,(groups.get(e.group)||0)+1)}
+function load(text,source){
+ const p=parse(text);
+ if(!p.entries.length)throw new Error('Keine Sender in der Playlist gefunden.');
+ entries=p.entries;header=p.header;rebuildGroups();
+ selectedGroups=new Set(groups.keys());selectedSenders=new Set();
+ $('search').value='';$('senderSearch').value='';$('sourceGroup').value='';
+ renderAll();
+ setStatus(source+': '+entries.length+' Sender in '+groups.size+' Gruppen geladen.','ok');
+}
+
+/* ---------- Laden per Link ---------- */
+const PUBLIC_PROXIES=[
+ {name:'allorigins.win',build:u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u)},
+ {name:'codetabs.com',build:u=>'https://api.codetabs.com/v1/proxy/?quest='+encodeURIComponent(u)}
+];
+function ownProxy(base,u){if(base.includes('{url}'))return base.replace('{url}',encodeURIComponent(u));return base.replace(/\/+$/,'')+'/?url='+encodeURIComponent(u)}
+async function fetchText(url,ms=45000){
+ const ctl=new AbortController();const timer=setTimeout(()=>ctl.abort(),ms);
+ try{const r=await fetch(url,{signal:ctl.signal,cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);return await r.text()}
+ catch(e){if(e.name==='AbortError')throw new Error('Zeitüberschreitung');throw e}
+ finally{clearTimeout(timer)}
+}
+async function loadFromUrl(url){
+ const attempts=[];
+ const mixed=location.protocol==='https:'&&/^http:/i.test(url);
+ if(!mixed)attempts.push({name:'direkt',url});
+ const own=$('proxyUrl').value.trim();
+ if(own)attempts.push({name:'eigener Proxy',url:ownProxy(own,url)});
+ if($('publicProxy').checked)PUBLIC_PROXIES.forEach(p=>attempts.push({name:p.name,url:p.build(url)}));
+ if(!attempts.length)throw new Error('Der Link nutzt http://, diese Seite aber https://. Der Browser blockiert das direkte Laden.\n→ Unter „Proxy-Einstellungen“ einen eigenen Proxy eintragen oder öffentliche Proxys erlauben.');
+ const errors=[];
+ for(const a of attempts){
+  setStatus('Playlist wird geladen ('+a.name+') …');
+  try{
+   const txt=await fetchText(a.url);
+   if(!/#EXTINF/i.test(txt))throw new Error('Antwort ist keine M3U-Playlist');
+   return {text:txt,via:a.name};
+  }catch(e){errors.push(a.name+': '+(e.message==='Failed to fetch'||e.message==='Load failed'?'blockiert (CORS/Netzwerk)':e.message))}
  }
- const source=$('sourceGroup');const old=source.value;source.innerHTML='<option value="">Alle bisherigen Gruppen</option>';
- [...groups.keys()].sort((a,b)=>a.localeCompare(b,'de')).forEach(name=>{const o=document.createElement('option');o.value=name;o.textContent=name;source.append(o)});
- if(groups.has(old))source.value=old;
- const target=$('targetGroup');const oldTarget=target.value;target.innerHTML='<option value="">Neue Gruppe erstellen …</option>';
- [...groups.keys()].sort((a,b)=>a.localeCompare(b,'de')).forEach(name=>{const o=document.createElement('option');o.value=name;o.textContent='Vorhandene Gruppe: '+name;target.append(o)});
- if(groups.has(oldTarget))target.value=oldTarget;
- $('newGroupName').disabled=!!target.value;$('newGroupName').placeholder=target.value?'Optionaler Name – wird nicht benötigt':'Name der neuen Gruppe';
- $('previewCard').hidden=false;
- renderSenders();updateCount();$('export').disabled=entries.length===0;renderPreview();
+ let hint='';
+ if(!own&&!$('publicProxy').checked)hint='\n→ Öffne „Proxy-Einstellungen“ und trage einen eigenen Proxy ein oder erlaube öffentliche Proxys.';
+ else hint='\n→ Manche Anbieter sperren Proxys/Rechenzentren. Dann die Playlist herunterladen und über „Datei vom Gerät auswählen“ öffnen.';
+ if(mixed)errors.unshift('direkt: übersprungen (http:// auf https://-Seite nicht erlaubt)');
+ throw new Error(errors.join('\n')+hint);
 }
-function channelTitle(item){
- const ext=item.lines.find(l=>l.startsWith('#EXTINF'))||'';
- const comma=ext.indexOf(',');return comma>=0?ext.slice(comma+1).trim():'Sender ohne Namen';
-}
-function renderSenders(){
- const host=$('senderList');host.innerHTML='';
- const groupFilter=$('sourceGroup').value;const q=$('senderSearch').value.trim().toLocaleLowerCase('de');
- let shown=0;
- entries.forEach((item,index)=>{
-  const title=channelTitle(item);
-  if(groupFilter&&item.group!==groupFilter)return;
-  if(q&&!title.toLocaleLowerCase('de').includes(q)&&!item.group.toLocaleLowerCase('de').includes(q))return;
-  shown++;
-  const label=document.createElement('label');label.className='sender';
-  const cb=document.createElement('input');cb.type='checkbox';cb.checked=selectedSenders.has(index);cb.dataset.index=index;
-  cb.addEventListener('change',()=>{if(cb.checked)selectedSenders.add(index);else selectedSenders.delete(index);updateSenderSelectionCount()});
-  const name=document.createElement('span');name.className='sname';name.textContent=title;name.title=title;
-  const group=document.createElement('span');group.className='sgroup';group.textContent=item.group;
-  label.append(cb,name,group);host.append(label);
- });
- if(!shown){const empty=document.createElement('div');empty.className='empty';empty.textContent='Keine passenden Sender gefunden.';host.append(empty)}
- updateSenderSelectionCount();
-}
-function updateSenderSelectionCount(){$('senderSelectionCount').textContent=selectedSenders.size+' Sender ausgewählt'}
-function assignGroup(item,name){
- let found=false;
- item.lines=item.lines.map(line=>{
-  if(line.startsWith('#EXTINF')){
-   found=true;
-   if(/\bgroup-title="[^"]*"/i.test(line))return line.replace(/\bgroup-title="[^"]*"/i,'group-title="'+name.replace(/\\/g,'\\\\').replace(/"/g,'&quot;')+'"');
-   const comma=line.indexOf(',');return comma>=0?line.slice(0,comma)+' group-title="'+name.replace(/\\/g,'\\\\').replace(/"/g,'&quot;')+'"'+line.slice(comma):line+' group-title="'+name+'"';
-  }
-  if(line.startsWith('#EXTGRP:'))return '#EXTGRP:'+name;
-  return line;
- });
- if(!found)item.lines.unshift('#EXTINF:-1 group-title="'+name+'",'+channelTitle(item));
- item.group=name;
-}
-function updateCount(){const selected=new Set([...document.querySelectorAll('#groups input:checked')].map(x=>x.dataset.group));$('selectedChannels').textContent=entries.filter(e=>selected.has(e.group)).length;$('export').disabled=!selected.size;if(!$('previewCard').hidden)renderPreview();}
-function getSelected(){return new Set([...document.querySelectorAll('#groups input:checked')].map(x=>x.dataset.group))}
 $('loadUrl').addEventListener('click',async()=>{
- const url=$('url').value.trim();if(!url){setStatus('Bitte zuerst einen M3U-Link eingeben.',true);return}
- try{setStatus('Playlist wird geladen …');$('loadUrl').disabled=true;const res=await fetch(url);if(!res.ok)throw new Error('HTTP '+res.status);const txt=await res.text();if(!txt.includes('#EXTM3U'))throw new Error('Die Antwort sieht nicht wie eine M3U-Playlist aus.');parse(txt);setStatus(entries.length+' Sender in '+groups.size+' Gruppen geladen.');}
- catch(e){setStatus('Link konnte nicht geladen werden: '+e.message+'\nMöglicherweise blockiert der Server Browser-Zugriffe (CORS). Bitte Datei herunterladen und lokal auswählen.',true)}
+ const url=$('url').value.trim();
+ if(!/^https?:\/\//i.test(url)){setStatus('Bitte einen Link mit http:// oder https:// eingeben.','error');return}
+ store.set('m3u.lastUrl',url);
+ $('loadUrl').disabled=true;
+ try{const r=await loadFromUrl(url);load(r.text,'Geladen ('+r.via+')')}
+ catch(e){setStatus('Link konnte nicht geladen werden:\n'+e.message,'error');if(!$('proxyUrl').value.trim())$('proxyBox').open=true}
  finally{$('loadUrl').disabled=false}
 });
-$('file').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{setStatus('Datei wird gelesen …');parse(await f.text());setStatus(f.name+': '+entries.length+' Sender in '+groups.size+' Gruppen geladen.')}catch(err){setStatus('Datei konnte nicht gelesen werden: '+err.message,true)}});
-$('clear').addEventListener('click',()=>{entries=[];groups.clear();selectedSenders.clear();$('url').value='';$('file').value='';$('results').hidden=true;$('exportCard').hidden=true;setStatus('Noch keine Playlist geladen.')});
-$('all').addEventListener('click',()=>{document.querySelectorAll('#groups input').forEach(x=>x.checked=true);updateCount()});
-$('none').addEventListener('click',()=>{document.querySelectorAll('#groups input').forEach(x=>x.checked=false);updateCount()});
-$('search').addEventListener('input',()=>{const q=$('search').value.toLocaleLowerCase('de');document.querySelectorAll('.group').forEach(el=>el.hidden=!el.dataset.name.includes(q))});
-$('sourceGroup').addEventListener('change',renderSenders);
-$('senderSearch').addEventListener('input',renderSenders);
-$('selectVisible').addEventListener('click',()=>{document.querySelectorAll('#senderList input[data-index]').forEach(cb=>{cb.checked=true;selectedSenders.add(Number(cb.dataset.index))});updateSenderSelectionCount()});
-$('clearSenderSelection').addEventListener('click',()=>{selectedSenders.clear();renderSenders()});
-$('targetGroup').addEventListener('change',()=>{const existing=!!$('targetGroup').value;$('newGroupName').disabled=existing;$('newGroupName').placeholder=existing?'Optionaler Name – wird nicht benötigt':'Name der neuen Gruppe';});
-$('makeGroup').addEventListener('click',()=>{
- const target=$('targetGroup').value;
- const name=target||$('newGroupName').value.trim();
- if(!name){setStatus('Bitte einen Namen für die neue Gruppe eingeben oder eine vorhandene Zielgruppe auswählen.',true);return}
- if(!selectedSenders.size){setStatus('Bitte zuerst mindestens einen Sender auswählen.',true);return}
- const chosen=[...selectedSenders];
- chosen.forEach(index=>assignGroup(entries[index],name));
- selectedSenders.clear();$('newGroupName').value='';$('targetGroup').value='';
- groups=new Map();entries.forEach(item=>groups.set(item.group,(groups.get(item.group)||0)+1));
- render();setStatus(chosen.length+' Sender wurden der Gruppe „'+name+'“ zugeordnet. Du kannst weitere Gruppen erstellen oder vorhandene Gruppen zusammenführen.');
+$('file').addEventListener('change',async e=>{
+ const f=e.target.files[0];if(!f)return;
+ try{setStatus('Datei wird gelesen …');load(await f.text(),f.name)}
+ catch(err){setStatus('Datei konnte nicht gelesen werden: '+err.message,'error')}
+ finally{$('file').value=''}
+});
+$('clear').addEventListener('click',()=>{
+ entries=[];groups=new Map();selectedGroups.clear();selectedSenders.clear();header='#EXTM3U';
+ $('url').value='';$('file').value='';
+ ['results','customCard','previewCard','exportCard'].forEach(id=>$(id).hidden=true);
+ setStatus('Noch keine Playlist geladen.');
 });
 
-function renderPreview(){
- const selected=getSelected();
- const chosen=entries.filter(e=>selected.has(e.group));
- const host=$('previewList');host.innerHTML='';
- const grouped=new Map();
- chosen.forEach(item=>{if(!grouped.has(item.group))grouped.set(item.group,[]);grouped.get(item.group).push(item)});
- $('previewSummary').textContent=chosen.length+' Sender in '+grouped.size+' Gruppen';
- if(!chosen.length){const empty=document.createElement('div');empty.className='empty';empty.textContent='Keine Gruppen ausgewählt. Wähle oben mindestens eine Gruppe aus.';host.append(empty);return}
- [...grouped].sort((a,b)=>a[0].localeCompare(b[0],'de')).forEach(([group,items])=>{
-  const section=document.createElement('div');section.className='card';section.style.margin='0';section.style.padding='12px';
-  const heading=document.createElement('strong');heading.textContent=group+' · '+items.length+' Sender';section.append(heading);
-  const list=document.createElement('div');list.style.marginTop='8px';list.style.display='grid';list.style.gap='5px';
-  items.forEach(item=>{const line=document.createElement('div');line.className='sender';line.textContent=channelTitle(item);list.append(line)});
-  section.append(list);host.append(section);
- });
+/* ---------- Anzeige ---------- */
+const byName=(a,b)=>a.localeCompare(b,'de');
+let previewTimer=0;
+function schedulePreview(){clearTimeout(previewTimer);previewTimer=setTimeout(renderPreview,150)}
+function renderAll(){
+ ['results','customCard','previewCard','exportCard'].forEach(id=>$(id).hidden=false);
+ $('totalChannels').textContent=entries.length;$('totalGroups').textContent=groups.size;
+ renderGroups();renderGroupSelects();renderSenders();updateCount();
 }
-$('refreshPreview').addEventListener('click',renderPreview);
-$('export').addEventListener('click',()=>{
- const selected=getSelected();const chosen=entries.filter(e=>selected.has(e.group));if(!chosen.length)return;
- const out=[header,...chosen.flatMap(e=>e.lines)].join('\n')+'\n';const blob=new Blob([out],{type:'audio/x-mpegurl;charset=utf-8'});const a=document.createElement('a');const u=URL.createObjectURL(blob);a.href=u;a.download='playlist-gefiltert.m3u';document.body.append(a);a.click();a.remove();URL.revokeObjectURL(u);$('exportInfo').textContent=chosen.length+' Sender exportiert.';
+function renderGroups(){
+ const host=$('groups');host.textContent='';
+ const q=$('search').value.trim().toLocaleLowerCase('de');
+ const frag=document.createDocumentFragment();
+ for(const name of [...groups.keys()].sort(byName)){
+  if(q&&!name.toLocaleLowerCase('de').includes(q))continue;
+  const label=document.createElement('label');label.className='group';
+  const cb=document.createElement('input');cb.type='checkbox';cb.checked=selectedGroups.has(name);
+  cb.addEventListener('change',()=>{cb.checked?selectedGroups.add(name):selectedGroups.delete(name);updateCount()});
+  const span=document.createElement('span');span.className='gname';span.textContent=name;span.title=name;
+  const n=document.createElement('span');n.className='count';n.textContent=groups.get(name)+' Sender';
+  label.append(cb,span,n);frag.append(label);
+ }
+ if(!frag.childNodes.length){const d=document.createElement('div');d.className='empty';d.textContent='Keine passende Gruppe.';frag.append(d)}
+ host.append(frag);
+}
+function renderGroupSelects(){
+ const names=[...groups.keys()].sort(byName);
+ const src=$('sourceGroup'),old=src.value;src.textContent='';src.append(new Option('Alle Gruppen',''));
+ names.forEach(n=>src.append(new Option(n+' ('+groups.get(n)+')',n)));src.value=groups.has(old)?old:'';
+ const tgt=$('targetGroup');tgt.textContent='';tgt.append(new Option('Neue Gruppe erstellen …',''));
+ names.forEach(n=>tgt.append(new Option('Vorhandene Gruppe: '+n,n)));
+ syncTarget();
+}
+function syncTarget(){const ex=!!$('targetGroup').value;$('newGroupName').disabled=ex;$('newGroupName').placeholder=ex?'Nicht nötig – vorhandene Gruppe gewählt':'Name der neuen Gruppe'}
+function senderMatches(){
+ const g=$('sourceGroup').value;const q=$('senderSearch').value.trim().toLocaleLowerCase('de');
+ const res=[];
+ entries.forEach((e,i)=>{if(g&&e.group!==g)return;if(q&&!e.title.toLocaleLowerCase('de').includes(q)&&!e.group.toLocaleLowerCase('de').includes(q))return;res.push(i)});
+ return res;
+}
+function renderSenders(){
+ const host=$('senderList');host.textContent='';
+ const idx=senderMatches();const frag=document.createDocumentFragment();
+ idx.slice(0,LIST_LIMIT).forEach(i=>{
+  const e=entries[i];
+  const label=document.createElement('label');label.className='sender';
+  const cb=document.createElement('input');cb.type='checkbox';cb.checked=selectedSenders.has(i);
+  cb.addEventListener('change',()=>{cb.checked?selectedSenders.add(i):selectedSenders.delete(i);updateSenderCount()});
+  const n=document.createElement('span');n.className='sname';n.textContent=e.title;n.title=e.title;
+  const g=document.createElement('span');g.className='sgroup';g.textContent=e.group;
+  label.append(cb,n,g);frag.append(label);
+ });
+ if(!idx.length){const d=document.createElement('div');d.className='empty';d.textContent='Keine passenden Sender gefunden.';frag.append(d)}
+ else if(idx.length>LIST_LIMIT){const d=document.createElement('div');d.className='more';d.textContent='Es werden '+LIST_LIMIT+' von '+idx.length+' Treffern angezeigt – Suche oder Gruppe eingrenzen.';frag.append(d)}
+ host.append(frag);updateSenderCount();
+}
+function updateSenderCount(){$('senderSelectionCount').textContent=selectedSenders.size+' Sender ausgewählt'}
+function updateCount(){
+ let n=0;for(const [g,c] of groups)if(selectedGroups.has(g))n+=c;
+ $('selectedChannels').textContent=n;$('export').disabled=!n;schedulePreview();
+}
+function renderPreview(){
+ const host=$('previewList');host.textContent='';
+ const grouped=new Map();
+ for(const e of entries)if(selectedGroups.has(e.group)){if(!grouped.has(e.group))grouped.set(e.group,[]);grouped.get(e.group).push(e)}
+ let total=0;grouped.forEach(v=>total+=v.length);
+ $('previewSummary').textContent=total+' Sender in '+grouped.size+' Gruppen werden exportiert. Gruppe antippen, um die Sender zu sehen.';
+ if(!total){const d=document.createElement('div');d.className='empty';d.textContent='Keine Gruppen ausgewählt.';host.append(d);return}
+ const frag=document.createDocumentFragment();
+ for(const g of [...grouped.keys()].sort(byName)){
+  const items=grouped.get(g);
+  const det=document.createElement('details');det.className='pgroup';
+  const sum=document.createElement('summary');sum.textContent=g+' · '+items.length+' Sender';det.append(sum);
+  det.addEventListener('toggle',()=>{
+   if(!det.open||det.dataset.filled)return;det.dataset.filled='1';
+   const list=document.createElement('div');list.className='plist';
+   items.slice(0,PREVIEW_ITEM_LIMIT).forEach(e=>{const d=document.createElement('div');d.textContent=e.title;list.append(d)});
+   if(items.length>PREVIEW_ITEM_LIMIT){const d=document.createElement('div');d.className='more';d.textContent='… und '+(items.length-PREVIEW_ITEM_LIMIT)+' weitere';list.append(d)}
+   det.append(list);
+  },{once:false});
+  frag.append(det);
+ }
+ host.append(frag);
+}
+
+/* ---------- Gruppen-Steuerung ---------- */
+function visibleGroupNames(){const q=$('search').value.trim().toLocaleLowerCase('de');return [...groups.keys()].filter(n=>!q||n.toLocaleLowerCase('de').includes(q))}
+$('search').addEventListener('input',renderGroups);
+$('all').addEventListener('click',()=>{visibleGroupNames().forEach(n=>selectedGroups.add(n));renderGroups();updateCount()});
+$('none').addEventListener('click',()=>{visibleGroupNames().forEach(n=>selectedGroups.delete(n));renderGroups();updateCount()});
+$('sourceGroup').addEventListener('change',renderSenders);
+let sTimer=0;$('senderSearch').addEventListener('input',()=>{clearTimeout(sTimer);sTimer=setTimeout(renderSenders,120)});
+$('selectVisible').addEventListener('click',()=>{senderMatches().forEach(i=>selectedSenders.add(i));renderSenders()});
+$('clearSenderSelection').addEventListener('click',()=>{selectedSenders.clear();renderSenders()});
+$('targetGroup').addEventListener('change',syncTarget);
+
+function cleanGroupName(n){return n.replace(/"/g,"'").replace(/[\r\n]+/g,' ').trim()}
+function assignGroup(e,name){
+ let found=false;
+ e.lines=e.lines.map(l=>{
+  if(isExtinf(l)){
+   found=true;
+   if(/group-title\s*=\s*"[^"]*"/i.test(l))return l.replace(/group-title\s*=\s*"[^"]*"/i,'group-title="'+name+'"');
+   const c=titleComma(l);
+   return c>=0?l.slice(0,c)+' group-title="'+name+'"'+l.slice(c):l+' group-title="'+name+'",'+e.title;
+  }
+  if(isExtgrp(l))return '#EXTGRP:'+name;
+  return l;
+ });
+ if(!found){const u=e.lines.findIndex(l=>!l.startsWith('#'));e.lines.splice(u<0?0:u,0,'#EXTINF:-1 group-title="'+name+'",'+e.title)}
+ e.group=name;
+}
+$('makeGroup').addEventListener('click',()=>{
+ const name=cleanGroupName($('targetGroup').value||$('newGroupName').value);
+ if(!name){setStatus('Bitte einen Namen für die neue Gruppe eingeben oder eine vorhandene Gruppe wählen.','error');return}
+ if(!selectedSenders.size){setStatus('Bitte zuerst mindestens einen Sender auswählen.','error');return}
+ const n=selectedSenders.size;
+ selectedSenders.forEach(i=>assignGroup(entries[i],name));
+ selectedSenders.clear();
+ const before=new Set(groups.keys());
+ rebuildGroups();
+ // Neue Gruppe direkt auswählen, leer gewordene Gruppen aus der Auswahl entfernen
+ if(!before.has(name))selectedGroups.add(name);
+ [...selectedGroups].forEach(g=>{if(!groups.has(g))selectedGroups.delete(g)});
+ $('newGroupName').value='';$('targetGroup').value='';
+ $('totalGroups').textContent=groups.size;
+ renderGroups();renderGroupSelects();renderSenders();updateCount();
+ setStatus(n+' Sender wurden der Gruppe „'+name+'“ zugeordnet.','ok');
 });
+
+/* ---------- Export ---------- */
+$('export').addEventListener('click',()=>{
+ const chosen=entries.filter(e=>selectedGroups.has(e.group));if(!chosen.length)return;
+ const out=[header,...chosen.flatMap(e=>e.lines)].join('\n')+'\n';
+ let name=$('fileName').value.trim().replace(/[\\/:*?"<>|]+/g,'_')||'playlist-gefiltert.m3u';
+ if(!/\.m3u8?$/i.test(name))name+='.m3u';
+ const blob=new Blob([out],{type:'audio/x-mpegurl;charset=utf-8'});
+ const a=document.createElement('a');const u=URL.createObjectURL(blob);
+ a.href=u;a.download=name;document.body.append(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(u),2000);
+ $('exportInfo').textContent=chosen.length+' Sender als „'+name+'“ exportiert.';
+});
+
+// Für Tests
+window.__m3u={parse,titleOf};
 })();
 </script></body></html>

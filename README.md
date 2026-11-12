@@ -1,41 +1,54 @@
-# M3U Creator (Android)
+# M3U Creator
 
-Ein einfacher Android-Prototyp: M3U-/M3U8-Link laden, `group-title`-Gruppen erkennen, Gruppen auswählen und eine gefilterte M3U-Datei speichern.
+M3U-/M3U8-Playlist laden, Gruppen auswählen, eigene Gruppen zusammenstellen und eine gefilterte M3U-Datei speichern. Stream-Adressen und Sender-Metadaten bleiben unverändert, die `#EXTM3U`-Kopfzeile (z. B. `x-tvg-url` für EPG) bleibt erhalten.
 
-## Öffnen und bauen
-1. Android Studio installieren.
-2. Dieses Projekt entpacken.
-3. In Android Studio `Open` wählen und den Ordner `M3UCreator` öffnen.
-4. Gradle-Synchronisierung abwarten.
-5. Ein Android-Gerät per USB-Debugging verbinden oder einen Emulator starten.
-6. `Run` drücken.
+Es gibt zwei Versionen:
 
-Voraussetzungen: Android Studio mit JDK 17, Android SDK Platform 35.
+| | Web-Version | Android-App |
+|---|---|---|
+| Läuft auf | iPhone, PC, Android (Browser) | Android, Fire TV / Fire Stick |
+| Laden per Link | direkt oder über Proxy (siehe unten) | direkt, ohne Einschränkung |
+| Datei öffnen | ✓ | ✓ |
+| Eigene Gruppen | ✓ | ✓ |
 
-## Was der Prototyp macht
-- HTTP- und HTTPS-Playlist-Links laden.
-- M3U-Einträge über `#EXTINF` erkennen.
-- Gruppen aus `group-title="..."` oder alternativ `#EXTGRP:` lesen.
-- Gruppen auswählen und die zugehörigen Einträge unverändert übernehmen.
-- Über den Android-Dateiauswahldialog als `.m3u` speichern.
-- Die Stream-URLs und EXTINF-Metadaten der übernommenen Einträge nicht umschreiben.
+## Web-Version
 
-## Grenzen / nächste Ausbaustufe
-- Kein Login-Formular für Xtream Codes; ein vollständiger M3U-Link mit nötigen Parametern kann verwendet werden.
-- Keine Senderwiedergabe, kein EPG-Download und keine Umgehung von DRM/Zugriffsschutz.
-- Sehr große Playlists sind auf 50 MB begrenzt.
-- Der Prototyp übernimmt die Senderblöcke und deren Metadaten. Globale Kommentare vor dem ersten Sender werden nicht in die Exportdatei übernommen; `#EXTM3U` wird neu geschrieben.
-- Für produktiven Einsatz sollten zusätzliche Tests für ungewöhnliche M3U-Varianten, Zeichensätze und Server-Authentifizierung ergänzt werden.
+Live unter **https://postmen1971.github.io/M3U-Creator/** (GitHub Pages, Quelle: Branch `main`, Ordner `/` (root)).
 
+### Warum „Link laden“ im Browser oft scheitert
+1. **CORS:** Die meisten IPTV-Server erlauben keinen Abruf aus einer fremden Webseite.
+2. **http auf https:** Die Seite läuft über `https://`, viele Playlist-Links sind `http://`. Das blockiert jeder Browser (auch Safari auf dem iPhone).
 
-## Web-Version (HTML)
-Die browserbasierte Version liegt unter [web/index.html](web/index.html).
-- Auf dem PC oder Android-Gerät im Browser öffnen (oder lokal als HTML-Datei speichern).
-- Eine M3U-/M3U8-Datei vom Gerät auswählen oder versuchen, einen Playlist-Link zu laden.
-- Gruppen auswählen und die gefilterte Playlist herunterladen.
-- Die Verarbeitung der Playlist erfolgt lokal im Browser.
+Lösung: Die Seite versucht zuerst den direkten Abruf und nimmt dann automatisch einen **Proxy**. Einzustellen unter „Proxy-Einstellungen“:
+- **Eigener Proxy (empfohlen):** kostenloser Cloudflare-Worker, Anleitung unten. Deine Zugangsdaten im Link gehen nur über deinen eigenen Worker.
+- **Öffentliche Proxys (Notlösung):** allorigins.win / codetabs.com. Funktioniert ohne Einrichtung, aber der komplette Link (inkl. Benutzername/Passwort) geht an fremde Dienste.
 
-**Hinweis zum Laden per URL:** Manche Playlist-Server erlauben aus Sicherheitsgründen keine Browser-Anfragen von anderen Webseiten (CORS). In diesem Fall bitte die Playlist-Datei zuerst herunterladen und anschließend über „Datei vom Gerät auswählen“ öffnen.
+Manche Anbieter sperren Zugriffe aus Rechenzentren. Dann hilft nur: Playlist herunterladen und über „Datei vom Gerät auswählen“ öffnen – oder die Android-App verwenden.
 
-### Als eigene Webseite veröffentlichen
-Im GitHub-Repository unter **Settings → Pages** als Quelle den Branch `main` und den Ordner `/web` auswählen. Danach stellt GitHub Pages die Web-Version unter der angezeigten Pages-Adresse bereit.
+### Eigenen Proxy einrichten (Cloudflare Worker, kostenlos, ca. 5 Minuten)
+1. Konto anlegen auf https://dash.cloudflare.com → **Workers & Pages** → **Create** → **Create Worker** (Name z. B. `m3u-proxy`) → **Deploy**.
+2. **Edit code** → den Inhalt von [`proxy/worker.js`](proxy/worker.js) komplett einfügen → **Deploy**.
+3. Unter **Settings → Runtime/Compatibility flags** `allow_custom_ports` hinzufügen (nötig für Links mit Port, z. B. `:8080`). Bei neuen Workern ist das meist schon Standard.
+4. Die Worker-Adresse (z. B. `https://m3u-proxy.deinname.workers.dev`) in der Web-Version unter „Proxy-Einstellungen“ eintragen. Sie wird im Browser gespeichert.
+
+Alternativ per Kommandozeile: `cd proxy && npx wrangler deploy`.
+
+Der Worker nimmt nur Anfragen von `https://postmen1971.github.io` (und lokalen Dateien) an. Andere Adressen bei Bedarf in `ALLOWED_ORIGINS` ergänzen.
+
+## Android-App
+
+Jeder Push auf `main` baut automatisch eine APK: **Actions → Build Android APK → letzter Lauf → Artifacts → `M3U-Creator-debug-apk`**.
+
+Lokal bauen: Projekt in Android Studio öffnen (JDK 17, Android SDK 35) und `Run` drücken.
+
+Funktionen:
+- Laden per Link (auch `http://`, Weiterleitungen, große Listen bis 50 MB) – ohne CORS-Probleme.
+- Playlist-Datei vom Gerät öffnen.
+- Gruppen suchen und auswählen.
+- Eigene Gruppe: Sender suchen, auswählen und in eine neue oder vorhandene Gruppe verschieben.
+- Speichern als `.m3u` über den Android-Dateidialog.
+
+## Grenzen
+- Kein Xtream-Codes-Login-Formular; den vollständigen M3U-Link (`get.php?username=…&password=…&type=m3u_plus`) verwenden.
+- Keine Wiedergabe, kein EPG-Download, keine Umgehung von DRM/Zugriffsschutz.
+- Playlists bis 50 MB.
