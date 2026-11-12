@@ -116,7 +116,7 @@ function assignGroup(item,name){
  if(!found)item.lines.unshift('#EXTINF:-1 group-title="'+name+'",'+channelTitle(item));
  item.group=name;
 }
-function updateCount(){const selected=new Set([...document.querySelectorAll('#groups input:checked')].map(x=>x.dataset.group));$('selectedChannels').textContent=entries.filter(e=>selected.has(e.group)).length;$('export').disabled=!selected.size;}
+function updateCount(){const selected=new Set([...document.querySelectorAll('#groups input:checked')].map(x=>x.dataset.group));$('selectedChannels').textContent=entries.filter(e=>selected.has(e.group)).length;$('export').disabled=!selected.size;if(!$('previewCard').hidden)renderPreview();}
 function getSelected(){return new Set([...document.querySelectorAll('#groups input:checked')].map(x=>x.dataset.group))}
 $('loadUrl').addEventListener('click',async()=>{
  const url=$('url').value.trim();if(!url){setStatus('Bitte zuerst einen M3U-Link eingeben.',true);return}
