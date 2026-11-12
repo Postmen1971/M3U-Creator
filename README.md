@@ -37,7 +37,12 @@ Der Worker nimmt nur Anfragen von `https://postmen1971.github.io` (und lokalen D
 
 ## Android-App
 
-Jeder Push auf `main` baut automatisch eine APK: **Actions → Build Android APK → letzter Lauf → Artifacts → `M3U-Creator-debug-apk`**.
+**Download (immer die neueste Version, ohne Login):**
+https://github.com/Postmen1971/M3U-Creator/releases/latest/download/M3U-Creator.apk
+
+Auf dem Fire Stick: App **Downloader** installieren, den Link oben eingeben, installieren. Vorher in den Einstellungen „Apps aus unbekannten Quellen“ für Downloader erlauben.
+
+Jeder Push auf `main` baut die APK neu und ersetzt den Download automatisch.
 
 Lokal bauen: Projekt in Android Studio öffnen (JDK 17, Android SDK 35) und `Run` drücken.
 

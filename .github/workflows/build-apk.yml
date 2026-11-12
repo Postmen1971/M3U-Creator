@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -36,3 +36,15 @@ jobs:
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
+
+      - name: Publish APK as release (fixed download link)
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp app/build/outputs/apk/debug/app-debug.apk M3U-Creator.apk
+          gh release delete apk --yes --cleanup-tag || true
+          gh release create apk M3U-Creator.apk \
+            --title "M3U Creator (aktueller Build)" \
+            --notes "Automatisch gebaut aus ${GITHUB_SHA::7}. Direkter Download: https://github.com/${{ github.repository }}/releases/latest/download/M3U-Creator.apk" \
+            --target "$GITHUB_SHA" --latest
